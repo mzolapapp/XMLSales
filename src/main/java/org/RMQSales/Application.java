@@ -62,7 +62,6 @@ public class Application implements CommandLineRunner {
 
         SpringApplication.run(Application.class, args);
 
-        System.out.println("***change logfile name***");
         Date d = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
         File logs = new File(File.separator + "home" + File.separator + "rmqSales" + File.separator + "logs" + File.separator + "logfile.log");
@@ -122,7 +121,8 @@ public class Application implements CommandLineRunner {
                 check.setUpdated_at(LocalDateTime.now());
                 checkService.save(check);
 
-                Application.log.info("Сохранение чека: \n" + id);
+                Application.log.info("Сохранение чека: " + id);
+                Application.log.info("Сохранение чека: " + id);
 
 
                 //Позиции чека
@@ -150,31 +150,49 @@ public class Application implements CommandLineRunner {
                     }
                     UUID nomenclature_ref = UUID.fromString(elements.get(13).text());
                     UUID nomenclature_info_ref = UUID.fromString(elements.get(19).text());
-                    Application.log.info("Сохранение позиции: \n" +
+                    Application.log.info("Сохранение позиции: " +
                             "чек - " + id + "позиция" + check_link);
 
-                    Positions positionObject = new Positions(
-                    );
-                    positionObject.setCheckId(check);
-                    positionObject.setCheckLink(check_link);
-                    positionObject.setPrice(price);
-                    positionObject.setCount(count);
-                    positionObject.setSum(sum);
-                    positionObject.setSum_vat(sum_vat);
-                    positionObject.setMz_sale_tech(mz_sale_tech);
-                    positionObject.setManual_discount_sum(manual_discount_sum);
-                    positionObject.setAuto_discount_sum(auto_discount_sum);
-                    positionObject.setBonus_discount_sum(bonus_discount_sum);
-                    positionObject.setMz_mpm_bonus_sum(mz_mpm_bonus_sum);
-                    positionObject.setMz_sale_mech(mz_sale_mech);
-                    positionObject.setMz_customer_profit(mz_customer_profit);
-                    positionObject.setNomenclature_ref(nomenclature_ref);
-                    positionObject.setNomenclature_info_ref(nomenclature_info_ref);
-                    positionObject.setInserted_at(LocalDateTime.now());
-                    positionObject.setUpdated_at(LocalDateTime.now());
+                    if (!positionsService.getByCheckIdAndCheckLink(check, check_link).isEmpty()) {
+                        Positions positionObject = positionsService.getByCheckIdAndCheckLink(check, check_link).get(0);
+                        positionObject.setPrice(price);
+                        positionObject.setCount(count);
+                        positionObject.setSum(sum);
+                        positionObject.setSum_vat(sum_vat);
+                        positionObject.setMz_sale_tech(mz_sale_tech);
+                        positionObject.setManual_discount_sum(manual_discount_sum);
+                        positionObject.setAuto_discount_sum(auto_discount_sum);
+                        positionObject.setBonus_discount_sum(bonus_discount_sum);
+                        positionObject.setMz_mpm_bonus_sum(mz_mpm_bonus_sum);
+                        positionObject.setMz_sale_mech(mz_sale_mech);
+                        positionObject.setMz_customer_profit(mz_customer_profit);
+                        positionObject.setNomenclature_ref(nomenclature_ref);
+                        positionObject.setNomenclature_info_ref(nomenclature_info_ref);
+                        positionObject.setUpdated_at(LocalDateTime.now());
 
-                    positionsService.save(positionObject);
+                        positionsService.save(positionObject);
+                    } else {
+                        Positions positionObject = new Positions();
+                        positionObject.setCheckId(check);
+                        positionObject.setCheckLink(check_link);
+                        positionObject.setPrice(price);
+                        positionObject.setCount(count);
+                        positionObject.setSum(sum);
+                        positionObject.setSum_vat(sum_vat);
+                        positionObject.setMz_sale_tech(mz_sale_tech);
+                        positionObject.setManual_discount_sum(manual_discount_sum);
+                        positionObject.setAuto_discount_sum(auto_discount_sum);
+                        positionObject.setBonus_discount_sum(bonus_discount_sum);
+                        positionObject.setMz_mpm_bonus_sum(mz_mpm_bonus_sum);
+                        positionObject.setMz_sale_mech(mz_sale_mech);
+                        positionObject.setMz_customer_profit(mz_customer_profit);
+                        positionObject.setNomenclature_ref(nomenclature_ref);
+                        positionObject.setNomenclature_info_ref(nomenclature_info_ref);
+                        positionObject.setInserted_at(LocalDateTime.now());
+                        positionObject.setUpdated_at(LocalDateTime.now());
 
+                        positionsService.save(positionObject);
+                    }
                     elements.clear();
                 }
                 //Платежи
@@ -214,7 +232,7 @@ public class Application implements CommandLineRunner {
                         MarkupsDiscounts markupsDiscounts = new MarkupsDiscounts();
                         markupsDiscounts.setCheck_id(check);
                         markupsDiscounts.setPosition_id(
-                                positionsService.getByCheckIdAndCheckLink(check, check_link)
+                                positionsService.getByCheckIdAndCheckLink(check, check_link).get(0)
                         );
                         markupsDiscounts.setCheck_link(check_link);
                         markupsDiscounts.setSum(sum);
@@ -225,12 +243,9 @@ public class Application implements CommandLineRunner {
                         markupsDiscountsService.save(markupsDiscounts);
                     }
                 }
-                Application.log.info("Сохранение чека в базу данных прошло успешно");
-
-
             } catch (FileNotFoundException e) {
                 Application.log.error("Файл " + filename + " не найден", e.fillInStackTrace());
-            } catch (IOException e) {
+            } catch (IOException | IndexOutOfBoundsException | IllegalArgumentException e) {
                 Application.log.error("Ошибка чтения файла", e.fillInStackTrace());
                 File file = new File(filename);
                 file.renameTo(new File(File.separator + "home" +
@@ -238,13 +253,9 @@ public class Application implements CommandLineRunner {
                         File.separator + "substandardMessages" +
                         File.separator + file.getName()));
             }
-        }
-
-        for (String filename : filenames) {
             File file = new File(filename);
-            file.delete();
+            Application.log.info("Сохранение чека в базу данных прошло успешно: " + file.delete());
         }
-
     }
 
     private static String readBufferedReader(String fileName) throws IOException {
@@ -264,7 +275,7 @@ public class Application implements CommandLineRunner {
 
     double parseDouble(String strNumber) {
         if (strNumber != null && strNumber.length() > 0) {
-            return Double.parseDouble(strNumber);
+            return Double.parseDouble(strNumber.replace(",", "."));
         } else return 0;
     }
 

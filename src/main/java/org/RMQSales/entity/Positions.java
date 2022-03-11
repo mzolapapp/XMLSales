@@ -26,7 +26,7 @@ public class Positions {
     private Checks checkId;
 
     @Column(name = "check_link")
-    private int checkLink;
+    private Integer checkLink;
 
     @Column(name = "price")
     private double price;

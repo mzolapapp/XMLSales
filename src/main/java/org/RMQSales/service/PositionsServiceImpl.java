@@ -6,6 +6,8 @@ import org.RMQSales.repository.PositionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class PositionsServiceImpl implements PositionsService {
     PositionsRepository positionsRepository;
@@ -19,7 +21,9 @@ public class PositionsServiceImpl implements PositionsService {
     }
 
     @Override
-    public Positions getByCheckIdAndCheckLink(Checks check, int check_link) {
-        return positionsRepository.findFirstByCheckIdAndCheckLink(check, check_link);
+    public List<Positions> getByCheckIdAndCheckLink(Checks check, int check_link) {
+        return positionsRepository.findAllByCheckIdAndCheckLink(check, check_link);
     }
+
+
 }
