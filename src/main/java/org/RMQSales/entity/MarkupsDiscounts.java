@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,13 +24,12 @@ public class MarkupsDiscounts {
     @Column(name = "id")
     private long id;
 
-    @OneToOne
-    @JoinColumn(name = "position_id")
-    private Positions position_id;
 
-    @OneToOne
-    @JoinColumn(name = "check_id")
-    private Checks check_id;
+    @Column(name = "position_id")
+    private long position_id;
+
+   @Column(name = "check_id")
+    private UUID check_id;
 
     @Column(name = "check_link")
     private int check_link;
@@ -39,9 +40,11 @@ public class MarkupsDiscounts {
     @Column(name = "markup_discount_ref")
     private UUID markup_discount_ref;
 
-    @Column(name = "inserted_at")
+    @CreationTimestamp
+    @Column(name = "inserted_at", updatable = false)
     private LocalDateTime inserted_at;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updated_at;
 

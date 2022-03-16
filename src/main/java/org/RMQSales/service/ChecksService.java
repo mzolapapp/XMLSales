@@ -1,12 +1,20 @@
 package org.RMQSales.service;
 
 import org.RMQSales.entity.Checks;
+import org.RMQSales.repository.CheckRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+@Service
+public class ChecksService {
+    CheckRepository checkRepository;
 
-public interface ChecksService {
+    @Autowired
+    public void setCheckRepository(CheckRepository checkRepository) {
+        this.checkRepository = checkRepository;
+    }
 
-    void save(Checks object);
-
-    Checks getOne(UUID id);
+    public void save(Checks object) {
+        checkRepository.save(object);
+    }
 }
