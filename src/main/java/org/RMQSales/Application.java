@@ -129,6 +129,12 @@ public class Application implements CommandLineRunner {
                     //Код карты
                     check.setBonus_card_code(document.getElementsByAttributeValue("name", "мзКодКартыНачисленияБонусов").text());
 
+                    //Проведен
+                    check.setPosted(Boolean.parseBoolean(document.getElementsByAttributeValue("name", "Проведен").text()));
+
+                    //Пометка удаления
+                    check.setDelete_mark(Boolean.parseBoolean(document.getElementsByAttributeValue("name", "ПометкаУдаления").text()));
+
                     checkService.save(check);
 
                     Application.log.info("Сохранение чека: " + id.text());

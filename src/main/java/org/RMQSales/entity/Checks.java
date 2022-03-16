@@ -48,6 +48,12 @@ public class Checks {
     @Column(name = "bonus_card_code")
     private String bonus_card_code;
 
+    @Column(name = "posted")
+    private boolean posted;
+
+    @Column(name = "delete_mark")
+    private boolean delete_mark;
+
     @CreationTimestamp
     @Column(name = "inserted_at", updatable = false)
     private LocalDateTime inserted_at;
