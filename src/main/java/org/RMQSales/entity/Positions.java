@@ -23,9 +23,8 @@ public class Positions {
     @Column(name = "id")
     private long id;
 
-    @ManyToOne
-    @JoinColumn(name = "check_id")
-    private Checks checkId;
+    @Column(name = "check_id")
+    private UUID checkId;
 
     @Column(name = "check_link")
     private Integer checkLink;

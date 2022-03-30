@@ -61,7 +61,6 @@ public class Application implements CommandLineRunner {
     public static void main(String[] args) {
 
         SpringApplication.run(Application.class, args);
-
         Date d = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
         File logs = new File(File.separator + "home" + File.separator + "rmqSales" + File.separator + "logs" + File.separator + "logfile.log");
@@ -83,9 +82,6 @@ public class Application implements CommandLineRunner {
             Application.log.info("Обработка файла: " + filename);
             try {
                 Checks check = new Checks();
-                Positions position = new Positions();
-                MarkupsDiscounts markupsDiscounts = new MarkupsDiscounts();
-                Payments payments = new Payments();
                 Document document = Jsoup.parse(readBufferedReader(filename), "", Parser.xmlParser());
                 Element link = Jsoup.parse(document.getElementsByAttributeValue("name", "ПолноеИмяМД").text(), "", Parser.xmlParser());
                 String documentType = link.text();
@@ -95,7 +91,8 @@ public class Application implements CommandLineRunner {
                                     .getElementsByAttributeValue("name", "Ссылка").first().toString()
                             , ""
                             , Parser.xmlParser());
-                    check.setId(UUID.fromString(id.text()));
+                    UUID check_id = UUID.fromString(id.text());
+                    check.setId(check_id);
 
                     //Статус чека
                     check.setCheck_status(document.getElementsByAttributeValue("name", "СтатусЧекаККМ").text());
@@ -144,6 +141,7 @@ public class Application implements CommandLineRunner {
                     Document positionsDoc = Jsoup.parse(document.getElementsByAttributeValue("name", "Товары").toString(), "", Parser.xmlParser());
                     Elements positions = positionsDoc.getElementsByTag("row");
                     for (Element element : positions) {
+                        Positions position = new Positions();
                         Elements elements = element.getElementsByTag("Value");
                         int check_link = parseInt(elements.get(0).text());
                         double price = parseDouble(elements.get(1).text());
@@ -168,7 +166,7 @@ public class Application implements CommandLineRunner {
                         Application.log.info("Сохранение позиции: " +
                                 "чек - " + id.text() + "позиция" + check_link);
 
-                        position.setCheckId(check);
+                        position.setCheckId(check.getId());
                         position.setCheckLink(check_link);
                         position.setPrice(price);
                         position.setCount(count);
@@ -184,13 +182,13 @@ public class Application implements CommandLineRunner {
                         position.setNomenclature_ref(nomenclature_ref);
                         position.setNomenclature_info_ref(nomenclature_info_ref);
                         positionsService.save(position);
-
                         elements.clear();
                     }
                     //Платежи - ввиду особенности составления XML-файла составление производится из массива элементов
                     Document paymentDocument = Jsoup.parse(document.getElementsByAttributeValue("name", "Оплата").toString(), "", Parser.xmlParser());
                     Elements paymentValues = paymentDocument.getElementsByTag("row");
                     for (Element element : paymentValues) {
+                        Payments payments = new Payments();
                         Elements elements = element.getElementsByTag("value");
                         String payment_type = elements.get(0).text();
                         double sum = parseDouble(elements.get(1).text());
@@ -210,6 +208,7 @@ public class Application implements CommandLineRunner {
                     Elements markupsDiscountsElements = markupsDiscountsDocument.getElementsByTag("row");
                     if (markupsDiscountsElements.size() > 0) {
                         for (Element element : markupsDiscountsElements) {
+                            MarkupsDiscounts markupsDiscounts = new MarkupsDiscounts();
                             Elements elements = element.getElementsByTag("value");
                             int check_link = parseInt(elements.get(0).text());
                             double sum = parseDouble(elements.get(1).text());
@@ -219,11 +218,10 @@ public class Application implements CommandLineRunner {
                                     .text());
                             Application.log.info("Сохранение скидок и наценок на товар чек - " + id.text() + ", позиция - " + check_link);
                             markupsDiscounts.setCheck_id(check.getId());
-                            markupsDiscounts.setPosition_id(position.getId());
+                            markupsDiscounts.setPosition_id(positionsService.getByCheckIdAndCheckLink(check_id, check_link).getId());
                             markupsDiscounts.setCheck_link(check_link);
                             markupsDiscounts.setSum(sum);
                             markupsDiscounts.setMarkup_discount_ref(markup_discount_ref);
-
                             markupsDiscountsService.save(markupsDiscounts);
                         }
                     }

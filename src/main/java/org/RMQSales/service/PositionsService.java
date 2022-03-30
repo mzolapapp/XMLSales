@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class PositionsService {
@@ -22,8 +23,8 @@ public class PositionsService {
     }
 
 
-    public List<Positions> getByCheckIdAndCheckLink(Checks check, int check_link) {
-        return positionsRepository.findAllByCheckIdAndCheckLink(check, check_link);
+    public Positions getByCheckIdAndCheckLink(UUID check_id, int check_link) {
+        return positionsRepository.findByCheckIdAndCheckLink(check_id, check_link);
     }
 
 
